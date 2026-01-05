@@ -12,17 +12,6 @@ The package provides utilities for:
 
 ------------------------------------------------------------
 
-## Table of Contents
-
-1. Installation  
-2. Quick Start  
-3. Searching for datasets  
-4. Inspecting dataset structure  
-5. Filtering and downloading data  
-6. Examples
-
-------------------------------------------------------------
-
 ## Installation
 
 You can run the install.py file in VSC or by running:
@@ -113,3 +102,4 @@ The returned object is a pandas DataFrame containing the requested subset of OEC
 ## Examples
 
 You can see this full example as a notebook called example.ipynb.
+
