@@ -14,13 +14,9 @@ The package provides utilities for:
 
 ## Installation
 
-You can run the install.py file in VSC or by running:
+You can install the package by running:
 
-    python install.py
-
-or, in the directory, run:
-
-    pip install -e .
+    pip install notoecd
 
 ------------------------------------------------------------
 
@@ -102,4 +98,5 @@ The returned object is a pandas DataFrame containing the requested subset of OEC
 ## Examples
 
 You can see this full example as a notebook called example.ipynb.
+
 
