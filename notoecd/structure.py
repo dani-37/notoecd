@@ -138,7 +138,11 @@ class Structure():
             print(f"Could not find explanation for {unclean_values}")
 
         return {i:explanation[i] for i in clean_values}
+    
+    def explain_columns(self, df:pd.DataFrame) -> dict:
+        dim_dict = self.concepts['DIMENSIONS']
+        return {i: dim_dict[i] for i in df.columns if i in dim_dict}
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=64)
 def get_structure(agencyID: str, dataflowID: str) -> Structure:
     return Structure(agencyID, dataflowID)
