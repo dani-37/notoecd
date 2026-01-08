@@ -3,6 +3,7 @@
 ⚠️ **Unofficial package, not endorsed by the OECD.**
 
 A lightweight Python interface for exploring OECD SDMX structures and downloading OECD datasets.  
+
 The package provides utilities for:
 
 - Discovering dataset metadata  
@@ -98,6 +99,3 @@ The returned object is a pandas DataFrame containing the requested subset of OEC
 ## Examples
 
 You can see this full example as a notebook called example.ipynb.
-
-
-
