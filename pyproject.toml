@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "notoecd"
-version = "0.1.0"
-description = "Library for interacting with the OECD Data Explorer through Python"
+version = "0.1.2"
+description = "Unofficial library for interacting with the OECD Data Explorer through Python."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -23,8 +23,6 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/dani-37/notoecd"
 
-[tool.setuptools]
-package-dir = {"" = "notoecd"}
-
 [tool.setuptools.packages.find]
-where = ["notoecd"]
+where = ["."]
+include = ["notoecd*"]

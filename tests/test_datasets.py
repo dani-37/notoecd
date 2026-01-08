@@ -1,6 +1,5 @@
 import importlib
 import requests
-import pandas as pd
 
 
 def _fake_dataflow_all_xml() -> bytes:
@@ -44,9 +43,12 @@ class _Resp:
             raise requests.HTTPError(f"HTTP {self.status_code}")
 
 
-def test_datasets_dataframe_built_on_import(monkeypatch):
+def test_datasets_lazy_loaded_and_cached_in_memory(monkeypatch):
+    calls = {"n": 0}
+
     def fake_get(url, *args, **kwargs):
         if url.endswith("/public/rest/dataflow/all"):
+            calls["n"] += 1
             return _Resp(_fake_dataflow_all_xml())
         raise AssertionError(f"Unexpected URL in test_datasets: {url}")
 
@@ -55,9 +57,18 @@ def test_datasets_dataframe_built_on_import(monkeypatch):
     datasets_mod = importlib.import_module("notoecd.datasets")
     importlib.reload(datasets_mod)
 
-    assert isinstance(datasets_mod.datasets, pd.DataFrame)
-    assert {"agencyID", "dataflowID", "name", "description"}.issubset(datasets_mod.datasets.columns)
-    assert len(datasets_mod.datasets) == 3
+    # Import should not fetch
+    assert calls["n"] == 0
+
+    # First search triggers load
+    hits = datasets_mod.search_keywords(["gdp"])
+    assert calls["n"] == 1
+    assert len(hits) == 1
+
+    # Second search should reuse in-memory cache (no extra fetch)
+    hits2 = datasets_mod.search_keywords(["cafe"])
+    assert calls["n"] == 1
+    assert len(hits2) == 1
 
 
 def test_search_keywords_or_and_normalization(monkeypatch):

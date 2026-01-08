@@ -18,43 +18,51 @@ NS = {
 _ws_re = re.compile(r"\s+")
 _tag_re = re.compile(r"<[^>]+>")
 
-def _clean_text(s: str | None) -> str | None:
+def _clean(s: str | None) -> str | None:
     if s is None: return None
     s = html.unescape(s)
     s = _tag_re.sub("", s)
     s = _ws_re.sub(" ", s).strip()
     return s or None
 
-headers = {
-    "Accept": "application/vnd.sdmx.structure+xml;version=2.1"
-}
+# Cache
+_datasets: pd.DataFrame | None = None
 
-r = requests.get(url, headers=headers, timeout=30)
-r.raise_for_status()
-root = ET.fromstring(r.content)
+def _load_datasets() -> pd.DataFrame:
+    """
+    Loads OECD datasets and keeps them in memory.
+    """
+    global _datasets
+    if _datasets is not None: return _datasets
 
-rows = []
-for df in root.findall(".//structure:Dataflow", NS):
-    dataflow_id = df.attrib.get("id")
-    agency_id = df.attrib.get("agencyID")
+    headers = {"Accept": "application/vnd.sdmx.structure+xml;version=2.1"}
+    r = requests.get(url, headers=headers, timeout=30)
+    r.raise_for_status()
+    root = ET.fromstring(r.content)
 
-    name_elem = df.find("common:Name[@xml:lang='en']", NS)
-    desc_elem = df.find("common:Description[@xml:lang='en']", NS)
+    rows = []
+    for df in root.findall(".//structure:Dataflow", NS):
+        dataflow_id = df.attrib.get("id")
+        agency_id = df.attrib.get("agencyID")
 
-    name = _clean_text("".join(name_elem.itertext())) if name_elem is not None else None
-    desc_raw = "".join(desc_elem.itertext()) if desc_elem is not None else None
-    desc = _clean_text(desc_raw)
+        name_elem = df.find("common:Name[@xml:lang='en']", NS)
+        desc_elem = df.find("common:Description[@xml:lang='en']", NS)
 
-    rows.append(
-        {
-            "dataflowID": dataflow_id,
-            "agencyID": agency_id,
-            "name": name,
-            "description": desc,
-        }
-    )
-    
-datasets = pd.DataFrame(rows)
+        name = _clean("".join(name_elem.itertext())) if name_elem is not None else None
+        desc_raw = "".join(desc_elem.itertext()) if desc_elem is not None else None
+        desc = _clean(desc_raw)
+
+        rows.append(
+            {
+                "dataflowID": dataflow_id,
+                "agencyID": agency_id,
+                "name": name,
+                "description": desc,
+            }
+        )
+
+    _datasets = pd.DataFrame(rows)
+    return _datasets
 
 def search_keywords(keywords: Union[str, List[str]]) -> pd.DataFrame:
     """
@@ -66,6 +74,7 @@ def search_keywords(keywords: Union[str, List[str]]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Matching rows.
     """
+    datasets = _load_datasets()
 
     # Normalize keywords input
     if isinstance(keywords, str): keywords = [keywords]
@@ -78,10 +87,8 @@ def search_keywords(keywords: Union[str, List[str]]) -> pd.DataFrame:
     def _normalize_series(s: pd.Series) -> pd.Series:
         s = s.fillna("").astype(str).str.lower()
         return s.map(
-            lambda x: "".join(
-                ch for ch in unicodedata.normalize("NFKD", x)
-                if not unicodedata.combining(ch)
-            )
+            lambda x: "".join(ch for ch in unicodedata.normalize("NFKD", x)
+                if not unicodedata.combining(ch))
         )
 
     # Combined normalized text for each row
