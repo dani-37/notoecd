@@ -68,7 +68,7 @@ def search_keywords(*keywords: str) -> pd.DataFrame:
     Searches OECD datasets for a set of keywords.
 
     Args:
-        keywords (str | list[str]): Single keyword or list of keywords. Acts as OR.
+        *keywords (str): One or more keywords. Acts as OR.
 
     Returns:
         pd.DataFrame: Matching rows.
@@ -89,13 +89,13 @@ def search_keywords(*keywords: str) -> pd.DataFrame:
             )
         )
 
-    # Combined normalized text for each row
     text = (
         datasets["name"].fillna("").astype(str)
         + " "
         + datasets["description"].fillna("").astype(str)
     )
     text_norm = _normalize_series(text)
+    name_norm = _normalize_series(datasets["name"])
 
     def _normalize_kw(kw: str) -> str:
         kw = unicodedata.normalize("NFKD", kw.lower())
@@ -108,8 +108,9 @@ def search_keywords(*keywords: str) -> pd.DataFrame:
 
     for kw in norm_keywords:
         m = text_norm.str.contains(kw, na=False, regex=False)
+        mt = name_norm.str.contains(kw, na=False, regex=False)
         overall_mask |= m
-        score = score.add(m.astype("int8"), fill_value=0)
+        score = score.add(m.astype("int8"), fill_value=0) + mt.astype("int8")
 
     result = datasets.loc[overall_mask].copy()
     result["_match_score"] = score.loc[overall_mask]
