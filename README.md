@@ -2,16 +2,16 @@
 
 ⚠️ **Unofficial package, not endorsed by the OECD.**
 
-A lightweight Python interface for exploring OECD SDMX structures and downloading OECD datasets.  
+A lightweight Python interface for exploring OECD SDMX structures and downloading OECD datasets.
 
 The package provides utilities for:
 
-- Discovering dataset metadata  
-- Searching for relevant datasets using keyword matching  
-- Exploring the structure and code lists of a dataset  
-- Fetching filtered SDMX data directly into a pandas DataFrame  
+- Discovering dataset metadata
+- Searching for relevant datasets using keyword matching
+- Exploring the structure and code lists of a dataset
+- Fetching filtered SDMX data directly into a pandas DataFrame
 
-------------------------------------------------------------
+---
 
 ## Installation
 
@@ -19,7 +19,7 @@ You can install the package by running:
 
     pip install notoecd
 
-------------------------------------------------------------
+---
 
 ## Quick Start
 
@@ -31,24 +31,24 @@ The main functions in this module are:
     get_structure(agencyID, dataflowID) -> Structure
     get_df(agencyID, dataflowID, filters) -> pd.DataFrame
 
-------------------------------------------------------------
+---
 
 ## Searching for datasets
 
 `search_keywords` performs:
 
-- Normalized text matching  
-- Accent-insensitive search  
-- Multi-keyword OR matching  
-- Ranking by number of matched keywords  
+- Normalized text matching
+- Accent-insensitive search
+- Multi-keyword OR matching
+- Ranking by number of matched keywords
 
 Example:
 
-    hits = notoecd.search_keywords(['gross domestic product', 'tl2', 'tl3'])
+    hits = notoecd.search_keywords('gross domestic product', 'tl2', 'tl3')
 
 This returns datasets that mention GDP and regional levels (TL2/TL3). It gives their name, description, and identifiers (agencyID and dataflowID), which we will need for the next step.
 
-------------------------------------------------------------
+---
 
 ## Inspecting dataset structure
 
@@ -73,7 +73,7 @@ This shows all filters and their available values.
 
 This shows the available measures and units used in the dataset.
 
-------------------------------------------------------------
+---
 
 ## Filtering and downloading data
 
@@ -94,7 +94,7 @@ Fetch the filtered dataset:
 
 The returned object is a pandas DataFrame containing the requested subset of OECD SDMX data.
 
-------------------------------------------------------------
+---
 
 ## Examples
 
