@@ -3,7 +3,6 @@ import html
 import requests
 import unicodedata
 import pandas as pd
-from typing import Union, List
 import xml.etree.ElementTree as ET
 
 url = "https://sdmx.oecd.org/public/rest/dataflow/all"
@@ -64,7 +63,7 @@ def _load_datasets() -> pd.DataFrame:
     _datasets = pd.DataFrame(rows)
     return _datasets
 
-def search_keywords(keywords: Union[str, List[str]]) -> pd.DataFrame:
+def search_keywords(*keywords: str) -> pd.DataFrame:
     """
     Searches OECD datasets for a set of keywords.
 
@@ -76,47 +75,44 @@ def search_keywords(keywords: Union[str, List[str]]) -> pd.DataFrame:
     """
     datasets = _load_datasets()
 
-    # Normalize keywords input
-    if isinstance(keywords, str): keywords = [keywords]
-    elif not isinstance(keywords, list): raise TypeError("keywords must be a string or list of strings")
-
-    # Clean and drop empty keywords
+    # Clean and validate keywords
     keywords = [k for k in keywords if isinstance(k, str) and k.strip()]
-    if not keywords: raise ValueError("No valid keywords provided.")
+    if not keywords:
+        raise ValueError("No valid keywords provided.")
 
     def _normalize_series(s: pd.Series) -> pd.Series:
         s = s.fillna("").astype(str).str.lower()
         return s.map(
-            lambda x: "".join(ch for ch in unicodedata.normalize("NFKD", x)
-                if not unicodedata.combining(ch))
+            lambda x: "".join(
+                ch for ch in unicodedata.normalize("NFKD", x)
+                if not unicodedata.combining(ch)
+            )
         )
 
     # Combined normalized text for each row
-    text = datasets["name"].fillna("").astype(str) + " " + datasets["description"].fillna("").astype(str)
+    text = (
+        datasets["name"].fillna("").astype(str)
+        + " "
+        + datasets["description"].fillna("").astype(str)
+    )
     text_norm = _normalize_series(text)
 
-    # Normalize keywords similarly
     def _normalize_kw(kw: str) -> str:
-        kw = kw.lower()
-        kw = unicodedata.normalize("NFKD", kw)
+        kw = unicodedata.normalize("NFKD", kw.lower())
         return "".join(ch for ch in kw if not unicodedata.combining(ch))
 
     norm_keywords = [_normalize_kw(k) for k in keywords]
 
-    # Vectorized OR search + simple score = count of matching keywords
     overall_mask = pd.Series(False, index=datasets.index)
     score = pd.Series(0, index=datasets.index, dtype="int64")
 
     for kw in norm_keywords:
-        if not kw: continue
-        # plain substring search, no regex
         m = text_norm.str.contains(kw, na=False, regex=False)
         overall_mask |= m
         score = score.add(m.astype("int8"), fill_value=0)
 
-    # Filter and sort by relevance
     result = datasets.loc[overall_mask].copy()
     result["_match_score"] = score.loc[overall_mask]
     result = result.sort_values("_match_score", ascending=False)
 
-    return result[['agencyID', 'dataflowID', 'name', 'description']]
+    return result[["agencyID", "dataflowID", "name", "description"]]

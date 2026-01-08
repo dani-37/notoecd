@@ -57,16 +57,13 @@ def test_datasets_lazy_loaded_and_cached_in_memory(monkeypatch):
     datasets_mod = importlib.import_module("notoecd.datasets")
     importlib.reload(datasets_mod)
 
-    # Import should not fetch
     assert calls["n"] == 0
 
-    # First search triggers load
-    hits = datasets_mod.search_keywords(["gdp"])
+    hits = datasets_mod.search_keywords("gdp")
     assert calls["n"] == 1
     assert len(hits) == 1
 
-    # Second search should reuse in-memory cache (no extra fetch)
-    hits2 = datasets_mod.search_keywords(["cafe"])
+    hits2 = datasets_mod.search_keywords("cafe")
     assert calls["n"] == 1
     assert len(hits2) == 1
 
@@ -82,8 +79,7 @@ def test_search_keywords_or_and_normalization(monkeypatch):
     datasets_mod = importlib.import_module("notoecd.datasets")
     importlib.reload(datasets_mod)
 
-    # OR behavior: should match GDP OR tl2 (not present) OR cafe (accent-insensitive)
-    hits = datasets_mod.search_keywords(["gross domestic product", "cafe"])
+    hits = datasets_mod.search_keywords("gross domestic product", "cafe")
 
     assert len(hits) == 2
     assert any(hits["dataflowID"] == "DSD_REG_ECO@DF_GDP")
@@ -105,7 +101,7 @@ def test_search_keywords_rejects_empty(monkeypatch):
     importlib.reload(datasets_mod)
 
     try:
-        datasets_mod.search_keywords(["   ", ""])
+        datasets_mod.search_keywords("   ", "")
         raise AssertionError("Expected ValueError for empty keywords")
     except ValueError:
         pass
