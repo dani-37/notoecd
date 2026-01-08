@@ -54,7 +54,7 @@ This returns datasets that mention GDP and regional levels (TL2/TL3). It gives t
 
 Once a dataset is identified, load its SDMX structure:
 
-    dataset = 'Gross domestic product - Regions'
+    # Gross domestic product - Regions
     agencyID = 'OECD.CFE.EDS'
     dataflowID = 'DSD_REG_ECO@DF_GDP'
 
@@ -89,7 +89,7 @@ Keys correspond to SDMX dimensions, values are strings or lists (for multiple va
 
 Fetch the filtered dataset:
 
-    df = notoecd.get_df(agency, dataflow, filters)
+    df = notoecd.get_df(agencyID, dataflowID, filters)
     df.head()
 
 The returned object is a pandas DataFrame containing the requested subset of OECD SDMX data.
