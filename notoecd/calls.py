@@ -3,7 +3,7 @@ from typing import Union
 from functools import lru_cache
 from .structure import get_structure
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=64)
 def _fetch_df(url: str) -> pd.DataFrame:
     return pd.read_csv(url, storage_options={"User-Agent": "Mozilla/5.0"})
 
@@ -38,7 +38,7 @@ def _build_filter_expression(
 def get_df(
     agencyID: str,
     dataflowID: str,
-    filters: Union[str, dict],
+    filters: Union[str, dict] = "",
     version: str = "",
 ) -> pd.DataFrame:
     
