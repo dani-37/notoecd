@@ -33,3 +33,6 @@ htmlcov/
 
 # --- Logs ---
 *.log
+
+# --- PyPI credentials ---
+.pypirc
